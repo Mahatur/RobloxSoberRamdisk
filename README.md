@@ -7,9 +7,13 @@
 ## ❗ Important Notes
 
 ✅ Works on **any Linux distro** that supports Flatpak
+
 ❎ Doesn't work on **Windows, MACos, Android, IOS, ChromeOS or whatever non linux**
+
 💾 Requires **at least ~4GB of RAM**  
+
 ⚠️ **All data in RAMDisk is lost on shutdown** So make sure you logged in before offloading it into ram.
+
 📁 Offloads `~/.var/app/org.vinegarhq.Sober` into RAM
 
 ---
