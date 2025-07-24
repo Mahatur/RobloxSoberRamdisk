@@ -1,14 +1,62 @@
 # RobloxSoberRamdisk
-## LINUX WITH SOBER FLATPAK ONLY, DATA IS NOT PRESERVED IF IN RAMDISK
 
-The roblox sober ramdisk is the way to reduce load from long 30 seconds **[SSD]** or 5 minutes **[HDD]** to 3 seconds **[RAM]** by utilizing whats called.
-**RAM** (Ramdom Memory Access)
-yes, ram (flatpak allows RAMDisk offload)
-It has Lowest latency and highest speed for caching roblox files + No ssd/hdd wear.
-to use it. just execute the `Soberam.sh` and wait for it, then after it's finished. just launch sober or `flatpak run org.vinegarhq.Sober`
+> 🚀 Ultra-fast loading for Roblox Sober Flatpak on Linux — reduce launch time from 30s (SSD) or 5 min (HDD) down to ~3 seconds in RAM
 
-for the game: https://github.com/vinegarhq/sober 
-Just Script to load /.var/app/org.vinegarhq.Sober into the ramdisk,
-Do whatever you want with the script, tweak it or improve it, it's just simple improvement.
+---
 
-(ssd companies hate on me)
+## ❗ Important Notes
+
+✅ Works on **any Linux distro** that supports Flatpak
+❎ Doesn't work on **Windows, MACos, Android, IOS, ChromeOS or whatever non linux**
+💾 Requires **at least ~4GB of RAM**  
+⚠️ **All data in RAMDisk is lost on shutdown** So make sure you logged in before offloading it into ram.
+📁 Offloads `~/.var/app/org.vinegarhq.Sober` into RAM
+
+---
+
+## 🛠️ How It Works
+
+This script mounts a `tmpfs` RAMDisk, copies Roblox Sober files into it, and allows Flatpak to use that instead of slow disk storage.
+
+### Benefits:
+
+- ⚡ Instant launch
+- 💾 No SSD wear (which is why SSD makers hate me)
+- 🧊 No HDD bottlenecks (no more clicking noises)
+- 🌐 Universal (as long as Flatpak works)
+
+---
+
+## 🚀 Usage
+
+```bash
+git clone https://github.com/Mahatur/RobloxSoberRamdisk
+cd RobloxSoberRamdisk
+chmod +x Soberam.sh
+./Soberam.sh
+```
+
+Once finished, run Roblox Sober:
+
+`flatpak run org.vinegarhq.Sober`
+
+📜 Script Logic Summary
+
+Mounts /home/you/sober-ramdisk as tmpfs (4GB, or you can adjust it)
+
+Copies data from ~/.var/app/org.vinegarhq.Sober to **RAM / TMPFS**
+
+Progress shown during copy
+
+Grants full read/write permission
+
+Overrides Flatpak to use the new location
+
+📝 NOTE
+
+If you don't have sufficient memory, use ZRAM (Do not swap to disk, i swear to god, it's the same as not using ramdisk)
+
+⚠️ SSD Makers Hate This
+
+This script completely bypasses storage I/O, reducing SSD/HDD usage to zero during gameplay
+. Use at your own discretion.
