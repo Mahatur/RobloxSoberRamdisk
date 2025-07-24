@@ -1,5 +1,7 @@
 # RobloxSoberRamdisk
 
+for game: https://github.com/vinegarhq/sober
+
 > 🚀 Ultra-fast loading for Roblox Sober Flatpak on Linux — reduce launch time from 30s (SSD) or 5 min (HDD) down to ~3 seconds in RAM
 
 ---
@@ -63,4 +65,6 @@ If you don't have sufficient memory, use ZRAM (Do not swap to disk, i swear to g
 ⚠️ SSD Makers Hate This
 
 This script completely bypasses storage I/O, reducing SSD/HDD usage to zero during gameplay
-. Use at your own discretion.
+
+No copyright, This just for speed improvement.
+Use at your own discretion.
