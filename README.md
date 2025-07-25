@@ -62,7 +62,7 @@ Overrides Flatpak to use the new location
 
 If you don't have sufficient memory, use ZRAM (Do not swap to disk, i swear to god, it's the same as not using ramdisk)
 
-⚠️ SSD Makers Hate This
+⚠️ SSD Makers Might Hate This
 
 This script completely bypasses storage I/O, reducing SSD/HDD usage to zero during gameplay
 
