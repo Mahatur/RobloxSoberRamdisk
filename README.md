@@ -46,6 +46,10 @@ Once finished, run Roblox Sober:
 
 `flatpak run org.vinegarhq.Sober`
 
+To remove it from ramdisk, run:
+
+`./Soberam.sh -r`
+
 📜 Script Logic Summary
 
 Mounts /home/you/sober-ramdisk as tmpfs (4GB, or you can adjust it)
