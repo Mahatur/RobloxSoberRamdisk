@@ -1,0 +1,114 @@
+#!/bin/bash
+set -e
+
+# Get the real user's home directory
+USER_HOME=$(eval echo ~$(logname))
+SOURCE_DIR="$USER_HOME/.var/app/org.vinegarhq.Sober"
+BACKUP_DIR="$USER_HOME/.var/app/org.vinegarhq.Sober.backup"
+RAM_DIR="$USER_HOME/sober-ramdisk"
+
+echo "Setting up Sober RAM disk..."
+
+# Create RAM disk with full permissions
+sudo mkdir -p "$RAM_DIR"
+if ! mountpoint -q "$RAM_DIR"; then
+    echo "Creating RAM disk (4GB)..."
+    sudo mount -t tmpfs -o size=4G,mode=755,uid=$(id -u),gid=$(id -g) tmpfs "$RAM_DIR"
+else
+    echo "RAM disk already mounted"
+fi
+
+# Backup original data if it exists and isn't already a symlink
+if [ -d "$SOURCE_DIR" ] && [ ! -L "$SOURCE_DIR" ]; then
+    echo "Backing up original Sober data..."
+    mv "$SOURCE_DIR" "$BACKUP_DIR"
+elif [ -L "$SOURCE_DIR" ]; then
+    echo "Sober directory is already a symlink, removing it..."
+    rm "$SOURCE_DIR"
+fi
+
+# Create the target directory in RAM disk
+mkdir -p "$RAM_DIR/Sober"
+
+# Copy data from backup to RAM disk if backup exists
+if [ -d "$BACKUP_DIR" ]; then
+    echo "Copying Sober data to RAM disk..."
+    
+    # Calculate total size for progress
+    TOTAL_SIZE=$(du -sb "$BACKUP_DIR" | cut -f1)
+    
+    # Start rsync in background
+    rsync -a --info=progress2 "$BACKUP_DIR/" "$RAM_DIR/Sober/" &
+    RSYNC_PID=$!
+    
+    # Monitor progress
+    while kill -0 $RSYNC_PID 2>/dev/null; do
+        if [ -d "$RAM_DIR/Sober" ]; then
+            COPIED_SIZE=$(du -sb "$RAM_DIR/Sober" 2>/dev/null | cut -f1 || echo "0")
+            if [ "$TOTAL_SIZE" -gt 0 ]; then
+                PERCENT=$(( COPIED_SIZE * 100 / TOTAL_SIZE ))
+                echo -ne "\rProgress: $PERCENT%"
+            fi
+        fi
+        sleep 1
+    done
+    echo -e "\rProgress: 100%"
+fi
+
+# Create symlink from original location to RAM disk
+ln -sf "$RAM_DIR/Sober" "$SOURCE_DIR"
+
+# Set proper permissions
+chmod -R 755 "$RAM_DIR/Sober"
+
+# Remove the filesystem override (clean slate)
+flatpak override --nofilesystem="$RAM_DIR/Sober" org.vinegarhq.Sober 2>/dev/null || true
+
+# Allow Flatpak to follow symlinks and access the RAM disk
+flatpak override --filesystem=home org.vinegarhq.Sober
+
+echo "✓ Sober data directory redirected to RAM disk"
+echo "✓ Original data backed up to: $BACKUP_DIR"
+echo "✓ RAM disk mounted at: $RAM_DIR"
+echo "✓ Symlink created: $SOURCE_DIR -> $RAM_DIR/Sober"
+
+# Create cleanup script
+cat > "$USER_HOME/cleanup-sober-ramdisk.sh" << 'EOF'
+#!/bin/bash
+USER_HOME=$(eval echo ~$(logname))
+SOURCE_DIR="$USER_HOME/.var/app/org.vinegarhq.Sober"
+BACKUP_DIR="$USER_HOME/.var/app/org.vinegarhq.Sober.backup"
+RAM_DIR="$USER_HOME/sober-ramdisk"
+
+echo "Cleaning up Sober RAM disk setup..."
+
+# Remove symlink
+if [ -L "$SOURCE_DIR" ]; then
+    rm "$SOURCE_DIR"
+fi
+
+# Restore original data
+if [ -d "$BACKUP_DIR" ]; then
+    mv "$BACKUP_DIR" "$SOURCE_DIR"
+    echo "✓ Original data restored"
+fi
+
+# Unmount RAM disk
+if mountpoint -q "$RAM_DIR"; then
+    sudo umount "$RAM_DIR"
+    sudo rmdir "$RAM_DIR"
+    echo "✓ RAM disk unmounted"
+fi
+
+# Reset Flatpak permissions
+flatpak override --reset org.vinegarhq.Sober
+
+echo "✓ Cleanup complete"
+EOF
+
+chmod +x "$USER_HOME/cleanup-sober-ramdisk.sh"
+echo "✓ Cleanup script created at: $USER_HOME/cleanup-sober-ramdisk.sh"
+
+echo ""
+echo "Setup complete! Sober will now use RAM disk for all data."
+echo "To undo this setup, run: ~/cleanup-sober-ramdisk.sh"
