@@ -33,7 +33,7 @@ This script mounts a `tmpfs` RAMDisk, copies Roblox Sober files into it, and all
 
 ---
 
-## 🚀 Usage
+## 🚀 Usage (needs git)
 
 ```bash
 cd ~/Downloads
