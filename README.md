@@ -37,8 +37,11 @@ This script mounts a `tmpfs` RAMDisk, copies Roblox Sober files into it, and all
 
 ```bash
 cd ~/Downloads
+sudo rm -r RobloxSoberRamdisk
 git clone https://github.com/Mahatur/RobloxSoberRamdisk
 cd RobloxSoberRamdisk
+sudo mv Soberam.sh ~/
+cd ~/
 chmod +x Soberam.sh
 ./Soberam.sh
 ```
