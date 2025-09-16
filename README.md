@@ -51,6 +51,10 @@ To remove it from ramdisk, run:
 
 `./Soberam.sh -r`
 
+To save it from ramdisk to local storage onfly, run:
+
+`./Soberam.sh -s`
+
 📜 Script Logic Summary
 
 Mounts /home/you/sober-ramdisk as tmpfs (4GB, or you can adjust it)
@@ -67,7 +71,7 @@ Overrides Flatpak to use the new location
 
 If you don't have sufficient memory, use ZRAM (Do not swap to disk, i swear to god, it's the same as not using ramdisk)
 
-⚠️ SSD Makers Might Hate This
+⚠️ HDD probably thank you
 
 This script completely bypasses storage I/O, reducing SSD/HDD usage to zero during gameplay
 
