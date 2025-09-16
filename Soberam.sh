@@ -1,7 +1,7 @@
 #!/bin/bash
 # Sober RAM Disk Manager
 # Redirects Sober (Roblox client) data to RAM disk for faster performance
-# Usage: ./script (install) or ./script -r (restore)
+# Usage: ./script (install) or ./script -r (restore) or ./script -s (save)
 # Coded by Claude Sonnet 4 because i suck
 
 set -e
@@ -18,23 +18,23 @@ install_ramdisk() {
         echo "Already installed"
         exit 0
     fi
-
+    
     # Create RAM disk
     sudo mkdir -p "$RAM_DIR" 2>/dev/null
     if ! mountpoint -q "$RAM_DIR"; then
         sudo mount -t tmpfs -o size=4G,mode=755,uid=$(id -u),gid=$(id -g) tmpfs "$RAM_DIR" 2>/dev/null
     fi
-
+    
     # Backup original data
     if [ -d "$SOURCE_DIR" ] && [ ! -L "$SOURCE_DIR" ]; then
         mv "$SOURCE_DIR" "$BACKUP_DIR"
     elif [ -L "$SOURCE_DIR" ]; then
         rm "$SOURCE_DIR"
     fi
-
+    
     # Create target directory
     mkdir -p "$RAM_DIR/Sober"
-
+    
     # Copy data with progress
     if [ -d "$BACKUP_DIR" ]; then
         TOTAL_SIZE=$(du -sb "$BACKUP_DIR" | cut -f1)
@@ -54,13 +54,13 @@ install_ramdisk() {
             echo -ne "\rProgress: 100%\n"
         fi
     fi
-
+    
     # Create symlink and set permissions
     ln -sf "$RAM_DIR/Sober" "$SOURCE_DIR"
     chmod -R 755 "$RAM_DIR/Sober" 2>/dev/null
     flatpak override --nofilesystem="$RAM_DIR/Sober" org.vinegarhq.Sober 2>/dev/null || true
     flatpak override --filesystem=home org.vinegarhq.Sober 2>/dev/null
-
+    
     echo "Done"
 }
 
@@ -70,44 +70,73 @@ remove_ramdisk() {
         echo "Nothing to remove"
         exit 0
     fi
-
+    
     # Save current data
     if [ -L "$SOURCE_DIR" ] && [ -d "$RAM_DIR/Sober" ]; then
         TEMP_BACKUP="$USER_HOME/.var/app/org.vinegarhq.Sober.temp"
         rsync -a "$RAM_DIR/Sober/" "$TEMP_BACKUP/" 2>/dev/null
     fi
-
+    
     # Remove symlink
     if [ -L "$SOURCE_DIR" ]; then
         rm "$SOURCE_DIR"
     fi
-
+    
     # Restore data
     if [ -d "$TEMP_BACKUP" ]; then
         mv "$TEMP_BACKUP" "$SOURCE_DIR"
     elif [ -d "$BACKUP_DIR" ]; then
         mv "$BACKUP_DIR" "$SOURCE_DIR"
     fi
-
+    
     # Cleanup
     if mountpoint -q "$RAM_DIR" 2>/dev/null; then
         sudo umount "$RAM_DIR" 2>/dev/null
         sudo rmdir "$RAM_DIR" 2>/dev/null || true
     fi
-
+    
     flatpak override --reset org.vinegarhq.Sober 2>/dev/null
     
     if [ -d "$BACKUP_DIR" ]; then
         rm -rf "$BACKUP_DIR"
     fi
-
+    
     echo "Done"
+}
+
+save_ramdisk() {
+    # Check if ramdisk is set up and mounted
+    if [ ! -L "$SOURCE_DIR" ] || ! mountpoint -q "$RAM_DIR" 2>/dev/null; then
+        echo "RAM disk not installed or not mounted"
+        exit 1
+    fi
+    
+    # Check if ramdisk data exists
+    if [ ! -d "$RAM_DIR/Sober" ]; then
+        echo "No data found in RAM disk"
+        exit 1
+    fi
+    
+    echo "Saving RAM disk contents to backup..."
+    
+    # Remove existing backup if it exists
+    if [ -d "$BACKUP_DIR" ]; then
+        rm -rf "$BACKUP_DIR"
+    fi
+    
+    # Copy current ramdisk data to backup
+    rsync -a "$RAM_DIR/Sober/" "$BACKUP_DIR/" 2>/dev/null
+    
+    echo "Done - RAM disk contents saved to org.vinegarhq.Sober.backup"
 }
 
 # Execute based on argument or default to install
 case "${1:-}" in
     -r)
         remove_ramdisk
+        ;;
+    -s)
+        save_ramdisk
         ;;
     *)
         install_ramdisk
