@@ -8,7 +8,7 @@ for game: https://github.com/vinegarhq/sober
 
 ## ❗ Important Notes
 
-✅ Works on **any Linux distro** that supports Flatpak
+✅ Works on **any Debian Variant (Including Ubuntu)** that supports Flatpak (I SAID NOT ARCH!!!)
 
 ❎ Doesn't work on **Windows, MACos, Android, IOS, ChromeOS or whatever non linux**
 
