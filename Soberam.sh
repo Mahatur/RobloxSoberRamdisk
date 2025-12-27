@@ -1,8 +1,8 @@
 #!/bin/bash
-# Sober RAM Disk Manager
+# Sober RAM Disk Manager, Only Works On Flatpak Version
 # Redirects Sober (Roblox client) data to RAM disk for faster performance
 # Usage: ./script (install) or ./script -r (restore) or ./script -s (save) or ./script -rf (force remove)
-# Coded by Claude Sonnet 4 because i suck
+# Coded by Claude Sonnet 4.5 because i suck
 set -e
 # Get the real user's home directory
 USER_HOME=$(eval echo ~$(logname))
