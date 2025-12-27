@@ -78,5 +78,4 @@ If you don't have sufficient memory, use ZRAM (Do not swap to disk, i swear to g
 
 This script completely bypasses storage I/O, reducing SSD/HDD usage to zero during gameplay
 
-No copyright, This just for speed improvement.
-Use at your own discretion.
+**MIT License**
