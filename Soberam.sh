@@ -1,17 +1,14 @@
 #!/bin/bash
 # Sober RAM Disk Manager
 # Redirects Sober (Roblox client) data to RAM disk for faster performance
-# Usage: ./script (install) or ./script -r (restore) or ./script -s (save)
+# Usage: ./script (install) or ./script -r (restore) or ./script -s (save) or ./script -rf (force remove)
 # Coded by Claude Sonnet 4 because i suck
-
 set -e
-
 # Get the real user's home directory
 USER_HOME=$(eval echo ~$(logname))
 SOURCE_DIR="$USER_HOME/.var/app/org.vinegarhq.Sober"
 BACKUP_DIR="$USER_HOME/.var/app/org.vinegarhq.Sober.backup"
 RAM_DIR="$USER_HOME/sober-ramdisk"
-
 install_ramdisk() {
     # Check if already installed
     if [ -L "$SOURCE_DIR" ] && mountpoint -q "$RAM_DIR" 2>/dev/null; then
@@ -63,7 +60,6 @@ install_ramdisk() {
     
     echo "Done"
 }
-
 remove_ramdisk() {
     # Check if setup exists
     if [ ! -L "$SOURCE_DIR" ] && [ ! -d "$BACKUP_DIR" ]; then
@@ -103,7 +99,32 @@ remove_ramdisk() {
     
     echo "Done"
 }
-
+force_remove_ramdisk() {
+    # Check if ramdisk is set up
+    if [ ! -L "$SOURCE_DIR" ] || ! mountpoint -q "$RAM_DIR" 2>/dev/null; then
+        echo "RAM disk not installed or not mounted"
+        exit 1
+    fi
+    
+    echo "Force removing - deleting RAM disk contents (backup preserved)"
+    
+    # Remove symlink
+    if [ -L "$SOURCE_DIR" ]; then
+        rm "$SOURCE_DIR"
+    fi
+    
+    # Unmount and remove RAM disk (this deletes all content)
+    if mountpoint -q "$RAM_DIR" 2>/dev/null; then
+        sudo umount "$RAM_DIR" 2>/dev/null
+        sudo rmdir "$RAM_DIR" 2>/dev/null || true
+    fi
+    
+    flatpak override --reset org.vinegarhq.Sober 2>/dev/null
+    
+    # Leave backup intact - do NOT touch BACKUP_DIR
+    echo "Done - RAM disk removed, backup preserved at org.vinegarhq.Sober.backup"
+    echo "Run './script' to reinstall from backup or './script -r' to fully restore"
+}
 save_ramdisk() {
     # Check if ramdisk is set up and mounted
     if [ ! -L "$SOURCE_DIR" ] || ! mountpoint -q "$RAM_DIR" 2>/dev/null; then
@@ -129,11 +150,13 @@ save_ramdisk() {
     
     echo "Done - RAM disk contents saved to org.vinegarhq.Sober.backup"
 }
-
 # Execute based on argument or default to install
 case "${1:-}" in
     -r)
         remove_ramdisk
+        ;;
+    -rf)
+        force_remove_ramdisk
         ;;
     -s)
         save_ramdisk
